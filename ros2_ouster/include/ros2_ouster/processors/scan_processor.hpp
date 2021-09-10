@@ -58,12 +58,13 @@ public:
     _mdata = mdata;
     _pub = _node->create_publisher<sensor_msgs::msg::LaserScan>("scan", qos);
 
-    double zero_angle = 9999.0;
+    double upperBound = 19999.0;
+    double lowerBound = 0.0;
     _ring = 0;
     for (uint i = 0; i != _mdata.beam_altitude_angles.size(); i++) {
-      if (fabs(_mdata.beam_altitude_angles[i]) < zero_angle) {
+      if (_mdata.beam_altitude_angles[i] < upperBound && _mdata.beam_altitude_angles[i] > lowerBound) {
         _ring = static_cast<uint8_t>(i);
-        zero_angle = fabs(_mdata.beam_altitude_angles[i]);
+        upperBound = _mdata.beam_altitude_angles[i];
       }
     }
   }
