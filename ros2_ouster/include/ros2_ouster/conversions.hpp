@@ -215,14 +215,14 @@ inline sensor_msgs::msg::LaserScan toMsg(
   msg.header.stamp = override_ts == 0 ? t : rclcpp::Time(override_ts);
   msg.header.frame_id = frame;
   msg.angle_min = -M_PI;
-  msg.angle_max = M_PI-0.0698132;
+  msg.angle_max = M_PI;//-0.0698132;
   msg.range_min = 0.1;
   msg.range_max = 120.0;
 
   msg.scan_time = 1.0 / ouster::sensor::frequency_of_lidar_mode(mdata.mode);
   msg.time_increment = 1.0 / ouster::sensor::frequency_of_lidar_mode(mdata.mode) /
     ouster::sensor::n_cols_of_lidar_mode(mdata.mode);
-  msg.angle_increment = (2 * M_PI-0.0698132) / ouster::sensor::n_cols_of_lidar_mode(mdata.mode);
+  msg.angle_increment = (2 * M_PI/*-0.0698132*/) / ouster::sensor::n_cols_of_lidar_mode(mdata.mode);
 
   for (size_t i = ls.w * ring_to_use + ls.w - 1; i >= ls.w * ring_to_use; i--) {
     msg.ranges.push_back(
