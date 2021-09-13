@@ -132,9 +132,9 @@ void OusterDriver::onConfigure()
       rclcpp::SensorDataQoS(), _sensor->getPacketFormat(), _full_rotation_accumulator, _proc_mask);
   }
 
-  _tf_b = std::make_unique<tf2_ros::StaticTransformBroadcaster>(
-    shared_from_this());
-  broadcastStaticTransforms(_sensor->getMetadata());
+  // _tf_b = std::make_unique<tf2_ros::StaticTransformBroadcaster>(
+  //   shared_from_this());
+  // broadcastStaticTransforms(_sensor->getMetadata());
 }
 
 void OusterDriver::onActivate()
