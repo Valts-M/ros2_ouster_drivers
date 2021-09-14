@@ -122,9 +122,9 @@ void OusterDriver::onConfigure()
       rclcpp::SensorDataQoS(), _os1_proc_mask);
   }
 
-  _tf_b = std::make_unique<tf2_ros::StaticTransformBroadcaster>(
-    shared_from_this());
-  broadcastStaticTransforms(mdata);
+  // _tf_b = std::make_unique<tf2_ros::StaticTransformBroadcaster>(
+  //   shared_from_this());
+  // broadcastStaticTransforms(mdata);
 }
 
 void OusterDriver::onActivate()

@@ -65,12 +65,13 @@ public:
       _width, _height, mdata.beam_azimuth_angles, mdata.beam_altitude_angles);
     _aggregated_scans.resize(_width * _height);
 
-    double zero_angle = 9999.0;
+    double upper_bound = 19999.0;
+    double lower_bound = = 0.0;
     _ring = 0;
     for (uint i = 0; i != _mdata.beam_altitude_angles.size(); i++) {
-      if (fabs(_mdata.beam_altitude_angles[i]) < zero_angle) {
+      if (_mdata.beam_altitude_angles[i] <= upper_bound && _mdata.beam_altitude_angles[i] >= lower_bound) {
         _ring = static_cast<uint8_t>(i);
-        zero_angle = fabs(_mdata.beam_altitude_angles[i]);
+        upper_bound = _mdata.beam_altitude_angles[i];
       }
     }
 
