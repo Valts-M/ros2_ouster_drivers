@@ -66,7 +66,7 @@ public:
     _aggregated_scans.resize(_width * _height);
 
     double upper_bound = 19999.0;
-    double lower_bound = = 0.0;
+    double lower_bound = 0.0;
     _ring = 0;
     for (uint i = 0; i != _mdata.beam_altitude_angles.size(); i++) {
       if (_mdata.beam_altitude_angles[i] <= upper_bound && _mdata.beam_altitude_angles[i] >= lower_bound) {
