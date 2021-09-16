@@ -65,12 +65,12 @@ public:
       _width, _height, mdata.beam_azimuth_angles, mdata.beam_altitude_angles);
     _aggregated_scans.resize(_width * _height);
 
-    double upper_bound = 19999.0;
+    double upper_bound = 2.0;
     double lower_bound = 0.0;
     _ring = 0;
-    for (uint i = 0; i != _mdata.beam_altitude_angles.size(); i++) {
-      if (_mdata.beam_altitude_angles[i] <= upper_bound && _mdata.beam_altitude_angles[i] >= lower_bound) {
-        _ring = static_cast<uint8_t>(i);
+    for (uint8_t i = 0; i != _mdata.beam_altitude_angles.size(); i++) {
+      if (_mdata.beam_altitude_angles[i] <= upper_bound && _mdata.beam_altitude_angles[i] > lower_bound) {
+        _ring = i;
         upper_bound = _mdata.beam_altitude_angles[i];
       }
     }
@@ -138,7 +138,7 @@ private:
   std::string _frame;
   uint32_t _height;
   uint32_t _width;
-  uint8_t _ring;
+  uint32_t _ring;
 };
 
 }  // namespace OS1

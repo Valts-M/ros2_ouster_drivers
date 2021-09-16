@@ -266,12 +266,14 @@ inline sensor_msgs::msg::LaserScan toMsg(
   msg.time_increment = 1.0 / rate / resolution;
   msg.angle_increment = 2 * M_PI / resolution;
 
-  for (uint i = 0; i != scans.size(); i++) {
+  uint i = scans.size();
+  do {
+    --i;
     if (scans[i].ring == ring_to_use) {
-      msg.ranges.push_back(scans[i].range * 5e-3);
-      msg.intensities.push_back(std::min(scans[i].intensity, 255.0f));
+      msg.ranges.push_back(scans[i].range * 1e-3);
+      msg.intensities.push_back(scans[i].intensity);
     }
-  }
+  } while(i != 0);
 
   return msg;
 }
