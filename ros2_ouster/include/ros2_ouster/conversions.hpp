@@ -226,7 +226,7 @@ inline sensor_msgs::msg::LaserScan toMsg(
   msg.angle_increment = (2 * M_PI) / ouster::sensor::n_cols_of_lidar_mode(mdata.mode);
 
   for (size_t i = ls.w * ring_to_use + ls.w - 1; i >= ls.w * ring_to_use; i--) {
-    const int id = (M_2_PI * (1 - static_cast<float>(ls.header(i).encoder) / 90112)) / msg.angle_increment;
+    const int id = (ouster::sensor::n_cols_of_lidar_mode(mdata.mode) * (1 - static_cast<float>(ls.header(i).encoder) / 90112));
     msg.ranges[id] =
       static_cast<float>((ls.field(ouster::LidarScan::RANGE)(i) * ouster::sensor::range_unit));
     msg.intensities[id] =
