@@ -230,7 +230,7 @@ inline sensor_msgs::msg::LaserScan toMsg(
     msg.ranges[id] =
       static_cast<float>((ls.field(ouster::LidarScan::RANGE)(i) * ouster::sensor::range_unit));
     msg.intensities[id] =
-      static_cast<float>((ls.field(ouster::LidarScan::INTENSITY)(i)))
+      static_cast<float>((ls.field(ouster::LidarScan::INTENSITY)(i)));
   }
 
   return msg;
