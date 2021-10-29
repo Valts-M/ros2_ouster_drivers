@@ -216,7 +216,7 @@ void OusterDriver::processData()
     std::pair<DataProcessorMapIt, DataProcessorMapIt> key_its;
 
     uint64_t override_ts =
-      this->_use_ros_time ? this->now().nanoseconds() : 0;
+      this->_use_ros_time ? this->now().nanoseconds() - 5e7 : 0;
 
     if (_lidar_packet_data) {
       _full_rotation_accumulator->accumulate(_lidar_packet_data, override_ts);
