@@ -208,7 +208,8 @@ inline sensor_msgs::msg::LaserScan toMsg(
   const std::string & frame,
   const ouster::sensor::sensor_info & mdata,
   const uint8_t ring_to_use,
-  const uint64_t override_ts)
+  const uint64_t override_ts,
+  const ouster::XYZLut & xyz_lut)
 {
   sensor_msgs::msg::LaserScan msg;
   rclcpp::Time t(timestamp.count());
@@ -219,20 +220,36 @@ inline sensor_msgs::msg::LaserScan toMsg(
   msg.range_min = 0.4;
   msg.range_max = 120.0;
   msg.ranges.resize(ouster::sensor::n_cols_of_lidar_mode(mdata.mode));
+  msg.intensities.resize(ouster::sensor::n_cols_of_lidar_mode(mdata.mode));
 
   msg.scan_time = 1.0 / ouster::sensor::frequency_of_lidar_mode(mdata.mode);
   msg.time_increment = 1.0 / ouster::sensor::frequency_of_lidar_mode(mdata.mode) /
     ouster::sensor::n_cols_of_lidar_mode(mdata.mode);
   msg.angle_increment = (2 * M_PI) / ouster::sensor::n_cols_of_lidar_mode(mdata.mode);
 
-  size_t col = ouster::sensor::n_cols_of_lidar_mode(mdata.mode);
-  for (size_t i = ls.w * ring_to_use + ls.w - 1; i >= ls.w * ring_to_use; i--) {
-    const int id = (ouster::sensor::n_cols_of_lidar_mode(mdata.mode) * (static_cast<float>(ls.header(--col).encoder) / 90112));
-    msg.ranges[id] =
-      static_cast<float>((ls.field(ouster::LidarScan::RANGE)(i) * ouster::sensor::range_unit));
-    msg.intensities[id] =
-      static_cast<float>((ls.field(ouster::LidarScan::INTENSITY)(i)));
+  auto points = ouster::cartesian(ls, xyz_lut);
+  for(size_t i; i < ls.w; ++i)
+  {
+    const auto xyz = points.row(ring_to_use * ls.w + i);
+    const int id = (::atan2(xyz(1), xyz(0)) + static_cast<float>(M_PI)) / msg.angle_increment;
+
+    if(id >= 0 && id < ls.w)
+    {
+      msg.ranges[id] = ::sqrtf(xyz(0) * xyz(0) + xyz(1) * xyz(1));
+      msg.intensities[id] = 
+        static_cast<float>((ls.field(ouster::LidarScan::INTENSITY)(ring_to_use * ls.w + i)));
+    }
   }
+
+
+  // size_t col = ouster::sensor::n_cols_of_lidar_mode(mdata.mode);
+  // for (size_t i = ls.w * ring_to_use + ls.w - 1; i >= ls.w * ring_to_use; i--) {
+  //   const int id = ouster::sensor::n_cols_of_lidar_mode(mdata.mode) * (1 - static_cast<float>(ls.header(--col).encoder) / 90112);
+  //   msg.ranges[id] =
+  //     static_cast<float>((ls.field(ouster::LidarScan::RANGE)(i) * ouster::sensor::range_unit));
+  //   msg.intensities[id] =
+  //     static_cast<float>((ls.field(ouster::LidarScan::INTENSITY)(i)));
+  // }
 
   return msg;
 }

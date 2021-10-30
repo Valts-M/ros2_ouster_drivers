@@ -57,6 +57,7 @@ public:
     _fullRotationAccumulator = fullRotationAccumulator;
     _mdata = mdata;
     _pub = _node->create_publisher<sensor_msgs::msg::LaserScan>("scan", qos);
+    _xyz_lut = ouster::make_xyz_lut(mdata);
 
     double upperBound = 19999.0;
     double lowerBound = 0.0;
@@ -91,7 +92,7 @@ public:
       ros2_ouster::toMsg(
         *_fullRotationAccumulator->getLidarScan(),
         _fullRotationAccumulator->getTimestamp(),
-        _frame, _mdata, _ring, override_ts));
+        _frame, _mdata, _ring, override_ts, _xyz_lut));
     return true;
   }
 
@@ -116,6 +117,7 @@ private:
   rclcpp_lifecycle::LifecycleNode::SharedPtr _node;
   ouster::sensor::sensor_info _mdata;
   std::string _frame;
+  ouster::XYZLut _xyz_lut;
   uint8_t _ring;
   ouster::sensor::packet_format _pf;
   std::shared_ptr<sensor::FullRotationAccumulator> _fullRotationAccumulator;

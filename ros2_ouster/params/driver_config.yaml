@@ -1,14 +1,14 @@
 ouster_driver:
   ros__parameters:
-    lidar_ip: 192.168.3.188
-    computer_ip: 192.168.3.167
+    lidar_ip: 192.168.3.22
+    computer_ip: 192.168.3.42
     lidar_mode: "1024x10"
     imu_port: 7503
     lidar_port: 7502
     sensor_frame: laser_sensor_frame
     #sensor_frame: base_link
-    laser_frame: laser_data_frame
-    imu_frame: imu_data_frame
+    laser_frame: laser_sensor_frame
+    imu_frame: laser_sensor_frame
 
     # if False, data are published with sensor data QoS. This is preferrable
     # for production but default QoS is needed for rosbag.

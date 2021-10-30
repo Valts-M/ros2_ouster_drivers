@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/",
+                "/opt/ros/foxy/include/**",
+                "/opt/ros/foxy/include",
+                "/vcpkg/installed/arm64-linux/include",
+                "/code/RobotV3/MainCore/include",
+                "/usr/include/pcl-1.10"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}
