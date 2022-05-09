@@ -20,7 +20,7 @@ find_package(builtin_interfaces REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(ouster_msgs REQUIRED)
-find_package(PCL REQUIRED COMPONENTS common)
+find_package(PCL REQUIRED)
 find_package(jsoncpp REQUIRED)
 
 include_directories(
@@ -70,6 +70,17 @@ target_link_libraries(${library_name}
 add_executable(${executable_name}
   src/main.cpp
 )
+
+add_executable(pc_filter src/pc_filter.cpp)
+ament_target_dependencies(pc_filter rclcpp PCL sensor_msgs)
+target_include_directories(pc_filter PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  ${PCL_INCLUDE_DIRS})
+target_link_libraries(pc_filter ${PCL_LIBRARIES})
+
+install(TARGETS pc_filter
+DESTINATION lib/${PROJECT_NAME})
 
 
 target_link_libraries(${executable_name} ${library_name})

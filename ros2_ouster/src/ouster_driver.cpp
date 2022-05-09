@@ -53,6 +53,14 @@ OusterDriver::OusterDriver(
   this->declare_parameter("lidar_port", 7502);
   this->declare_parameter("lidar_mode", std::string("512x10"));
   this->declare_parameter("timestamp_mode", std::string("TIME_FROM_INTERNAL_OSC"));
+  
+  this->declare_parameter("box_filter.enable", false);
+  this->declare_parameter("box_filter.dimensions.x", 1.);
+  this->declare_parameter("box_filter.dimensions.y", 1.);
+  this->declare_parameter("box_filter.dimensions.z", 1.);
+  this->declare_parameter("box_filter.transform.x", 0.);
+  this->declare_parameter("box_filter.transform.y", 0.);
+  this->declare_parameter("box_filter.transform.z", 0.);
 }
 
 OusterDriver::~OusterDriver() = default;
@@ -65,6 +73,15 @@ void OusterDriver::onConfigure()
   _imu_data_frame = get_parameter("imu_frame").as_string();
   _use_system_default_qos = get_parameter("use_system_default_qos").as_bool();
   _proc_mask = ros2_ouster::toProcMask(get_parameter("proc_mask").as_string());
+
+  ros2_ouster::FilterConfig filter_config;
+  filter_config.enabled = this->get_parameter("box_filter.enable").as_bool();
+  filter_config.size_x = this->get_parameter("box_filter.dimensions.x").as_double();
+  filter_config.size_y = this->get_parameter("box_filter.dimensions.y").as_double();
+  filter_config.size_z = this->get_parameter("box_filter.dimensions.z").as_double();
+  filter_config.offset_x = this->get_parameter("box_filter.transform.x").as_double();
+  filter_config.offset_y = this->get_parameter("box_filter.transform.y").as_double();
+  filter_config.offset_z = this->get_parameter("box_filter.transform.z").as_double();
 
   // Get parameters used across ALL _sensor_ implementations. Parameters unique
   // a specific Sensor implementation are "getted" in the configure() function
@@ -125,11 +142,11 @@ void OusterDriver::onConfigure()
     _data_processors = ros2_ouster::createProcessors(
       shared_from_this(), _sensor->getMetadata(), _imu_data_frame, _laser_data_frame,
       rclcpp::SystemDefaultsQoS(),
-      _sensor->getPacketFormat(), _full_rotation_accumulator, _proc_mask);
+      _sensor->getPacketFormat(), filter_config, _full_rotation_accumulator, _proc_mask);
   } else {
     _data_processors = ros2_ouster::createProcessors(
       shared_from_this(), _sensor->getMetadata(), _imu_data_frame, _laser_data_frame,
-      rclcpp::SensorDataQoS(), _sensor->getPacketFormat(), _full_rotation_accumulator, _proc_mask);
+      rclcpp::SensorDataQoS(), _sensor->getPacketFormat(), filter_config,_full_rotation_accumulator, _proc_mask);
   }
 
   // _tf_b = std::make_unique<tf2_ros::StaticTransformBroadcaster>(

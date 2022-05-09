@@ -30,6 +30,10 @@
 #include "ros2_ouster/client/point.h"
 #include "ros2_ouster/interfaces/data_processor_interface.hpp"
 #include "ros2_ouster/full_rotation_accumulator.hpp"
+#include "ros2_ouster/interfaces/configuration.hpp"
+#include <pcl/filters/crop_box.h>
+#include <pcl/common/transforms.h>
+#include <pcl/conversions.h>
 
 using Cloud = pcl::PointCloud<ouster_ros::Point>;
 
@@ -56,16 +60,26 @@ public:
     const std::string & frame,
     const rclcpp::QoS & qos,
     const ouster::sensor::packet_format & pf,
+    const ros2_ouster::FilterConfig & filterConfig,
     std::shared_ptr<sensor::FullRotationAccumulator> fullRotationAccumulator)
-  : DataProcessorInterface(), _node(node), _frame(frame)
+  : DataProcessorInterface(), _node(node), _frame(frame), _filterConfig(filterConfig)
   {
     _fullRotationAccumulator = fullRotationAccumulator;
     _height = mdata.format.pixels_per_column;
     _width = mdata.format.columns_per_frame;
+    _unfilteredCloud = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(_width, _height);
+    _filteredCloud = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(_width, _height);
     _xyz_lut = ouster::make_xyz_lut(mdata);
     _cloud = std::make_unique<Cloud>(_width, _height);
     _pub = _node->create_publisher<sensor_msgs::msg::PointCloud2>(
       "points", qos);
+
+    _boxFilter.setMin(Eigen::Vector4f(-filterConfig.size_x/2, -filterConfig.size_y/2, -filterConfig.size_z/2, 1.0));
+    _boxFilter.setMax(Eigen::Vector4f(filterConfig.size_x/2, filterConfig.size_y/2, filterConfig.size_z/2, 1.0));
+
+    _boxFilter.setTranslation(Eigen::Vector3f(filterConfig.offset_x, filterConfig.offset_y, filterConfig.offset_z));
+    _boxFilter.setInputCloud(_unfilteredCloud);
+    _boxFilter.setNegative(true);
   }
 
   /**
@@ -89,11 +103,26 @@ public:
     ros2_ouster::toCloud(
       _xyz_lut, _fullRotationAccumulator->getTimestamp(),
       *_fullRotationAccumulator->getLidarScan(), *_cloud);
-    _pub->publish(
-      ros2_ouster::toMsg(
+
+    const auto tmpMsg = ros2_ouster::toMsg(
         *_cloud,
         _fullRotationAccumulator->getTimestamp(),
-        _frame, override_ts));
+        _frame, override_ts);
+
+    if(_filterConfig.enabled)
+    {
+      pcl::fromROSMsg(tmpMsg, *_unfilteredCloud);
+      _boxFilter.filter(*_filteredCloud);
+      pcl::toROSMsg(*_filteredCloud, _filteredMsg);
+      _filteredMsg.header = tmpMsg.header;
+    }
+    else
+    {
+      _filteredMsg = tmpMsg;
+    }
+
+
+    _pub->publish(_filteredMsg);
 
     RCLCPP_DEBUG(
       _node->get_logger(),
@@ -120,7 +149,13 @@ public:
   }
 
 private:
-  std::unique_ptr<Cloud> _cloud;
+  std::unique_ptr<Cloud>  _cloud;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr _unfilteredCloud{};
+  pcl::PointCloud<pcl::PointXYZ>::Ptr _filteredCloud{};
+  sensor_msgs::msg::PointCloud2 _filteredMsg{};
+  pcl::CropBox<pcl::PointXYZ> _boxFilter{};
+  ros2_ouster::FilterConfig _filterConfig;
+
   rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::PointCloud2>::SharedPtr _pub;
   rclcpp_lifecycle::LifecycleNode::SharedPtr _node;
   ouster::XYZLut _xyz_lut;

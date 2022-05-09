@@ -105,10 +105,11 @@ inline std::unique_ptr<ros2_ouster::DataProcessorInterface> createPointcloudProc
   const std::string & frame,
   const rclcpp::QoS & qos,
   const ouster::sensor::packet_format & pf,
+  const ros2_ouster::FilterConfig & filterConfig,
   std::shared_ptr<sensor::FullRotationAccumulator> fullRotationAccumulator)
 {
   return std::make_unique<sensor::PointcloudProcessor>(
-    node, mdata, frame, qos, pf, fullRotationAccumulator);
+    node, mdata, frame, qos, pf, filterConfig, fullRotationAccumulator);
 }
 
 /**
@@ -152,6 +153,7 @@ inline std::multimap<ouster::sensor::client_state,
   const std::string & laser_frame,
   const rclcpp::QoS & qos,
   const ouster::sensor::packet_format & pf,
+  const ros2_ouster::FilterConfig & filterConfig,
   std::shared_ptr<sensor::FullRotationAccumulator> fullRotationAccumulator,
   std::uint32_t mask = ros2_ouster::DEFAULT_PROC_MASK)
 {
@@ -170,7 +172,7 @@ inline std::multimap<ouster::sensor::client_state,
     data_processors.insert(
       std::pair<ouster::sensor::client_state, std::unique_ptr<ros2_ouster::DataProcessorInterface>>(
         ouster::sensor::client_state::LIDAR_DATA, createPointcloudProcessor(
-          node, mdata, laser_frame, qos, pf,
+          node, mdata, laser_frame, qos, pf, filterConfig,
           fullRotationAccumulator)));
   }
 

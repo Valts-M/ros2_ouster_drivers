@@ -33,6 +33,17 @@ struct Configuration
   std::string ethernet_device;
 };
 
+struct FilterConfig
+{
+  bool enabled;
+  double size_x;
+  double size_y;
+  double size_z;
+  double offset_x;
+  double offset_y;
+  double offset_z;
+};
+
 }  // namespace ros2_ouster
 
 #endif  // ROS2_OUSTER__INTERFACES__CONFIGURATION_HPP_
